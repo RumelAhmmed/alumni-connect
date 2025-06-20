@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Alumni Connect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #25D366;
+            --secondary-color: #128C7E;
+            --dark-color: #075E54;
+            --light-color: #DCF8C6;
+            --background-color: #e5ddd5;
+            --message-bg: #ffffff;
+            --self-message-bg: #DCF8C6;
+            --text-color: #3b4a54;
+            --text-light: #667781;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Helvetica, sans-serif;
+            color: var(--text-color);
+            height: 100vh;
+            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+            background-repeat: repeat;
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: calc(100vh - 4rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--dark-color);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logged-in {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .logged-in strong {
+            color: white;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: var(--background-color);
+            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+            background-repeat: repeat;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 70%;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 7.5px;
+            position: relative;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .received {
+            background-color: var(--message-bg);
+            align-self: flex-start;
+            border-top-left-radius: 0;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.1);
+        }
+
+        .sent {
+            background-color: var(--self-message-bg);
+            align-self: flex-end;
+            border-top-right-radius: 0;
+        }
+
+        .message-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.3rem;
+        }
+
+        .sender {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: var(--dark-color);
+        }
+
+        .time {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-left: 0.5rem;
+        }
+
+        .typing-indicator {
+            padding: 0 1.5rem;
+            height: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-area {
+            padding: 1rem;
+            background-color: white;
+            border-top: 1px solid #e9edef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            border-radius: 20px;
+            padding: 0.75rem 1.25rem;
+            background-color: #f0f2f5;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .send-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Scrollbar styling */
+        .messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                margin: 0;
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <h4><i class="fas fa-graduation-cap"></i> Alumni Connect</h4>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar"></div>
+            <div class="logged-in">Logged in as: <strong id="currentUser"></strong></div>
+        </div>
+    </div>
+
+    <div id="messages" class="messages"></div>
+
+    <div id="typingIndicator" class="typing-indicator"></div>
+
+    <div class="input-area">
+        <input type="text" id="messageInput" class="message-input" placeholder="Type a message..." autocomplete="off" />
+        <button id="sendBtn" class="send-btn" disabled>
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    // Get username from prompt or use default
+    let username = prompt("Enter your name") || "Anonymous";
+    document.getElementById('currentUser').textContent = username;
+
+    // Generate avatar from username
+    const userAvatar = document.getElementById('userAvatar');
+    if (username !== "Anonymous") {
+        const initials = username.split(' ').map(n => n[0]).join('').toUpperCase();
+        userAvatar.textContent = initials;
+    } else {
+        userAvatar.innerHTML = '<i class="fas fa-user"></i>';
+    }
+
+    // Initialize WebSocket connection
+    const socket = new SockJS('/ws');
+    const stompClient = Stomp.over(socket);
+    stompClient.debug = () => {}; // Disable debug logging
+
+    // DOM elements
+    const messagesDiv = document.getElementById('messages');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Enable/disable send button based on input
+    input.addEventListener('input', () => {
+        sendBtn.disabled = input.value.trim() === "";
+    });
+
+    // Display message function
+    function appendMessage(sender, content, timestamp) {
+        const isSelf = sender === username;
+        const time = timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) :
+            new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(isSelf ? 'sent' : 'received');
+
+        messageDiv.innerHTML = `
+            ${!isSelf ? `<div class="sender">${sender}</div>` : ''}
+            <div>${content}</div>
+            <div class="message-info">
+                <span class="time">${time}</span>
+            </div>
+        `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Connect to WebSocket and subscribe to messages
+    stompClient.connect({}, () => {
+        stompClient.subscribe('/topic/messages', (msg) => {
+            const message = JSON.parse(msg.body);
+            appendMessage(message.sender, message.content, message.timestamp);
+        });
+
+        // Send join notification
+        const joinMsg = {
+            sender: 'System',
+            content: `${username} has joined the chat`,
+            timestamp: new Date().getTime()
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(joinMsg));
+    });
+
+    // Send message function
+    function sendMessage() {
+        const messageText = input.value.trim();
+        if (messageText !== "") {
+            const msg = {
+                sender: username,
+                content: messageText,
+                timestamp: new Date().getTime()
+            };
+            stompClient.send("/app/chat", {}, JSON.stringify(msg));
+            input.value = "";
+            sendBtn.disabled = true;
+        }
+    }
+
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Add welcome message
+    window.addEventListener('load', () => {
+        appendMessage('System', `Welcome to Alumni Connect, ${username}! Start chatting with your fellow alumni.`);
+    });
+</script>
+</body>
+</html>
